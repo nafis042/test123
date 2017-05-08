@@ -1,0 +1,34 @@
+
+{% block content %}
+<form action="" method="post">
+{% csrf_token %}
+{% if form.errors %}<p>Please correct the following fields:</p>{% endif %}
+<div class="register_div">
+        {% if form.username.errors %}<p class="error">{{ form.username.errors }}</p>{% endif %}
+        <p>First Name:</p>
+        <p>{{ form.username }}</p>
+</div>
+<div class="register_div">
+
+        <p>Email:</p>
+        <p>{{ form.email }}</p>
+</div>
+<div class="register_div">
+
+        <p>Password:</p>
+        <p>{{ form.password }}</p>
+</div>
+<div class="register_div">
+
+        <p>Verify Password:</p>
+        <p>{{ form.password1 }}</p>
+</div>
+
+<div class="register_div">
+
+        <p>Name:</p>
+        <p>{{ form.name }}</p>
+</div>
+<p><input type="submit" alt="register" /></p>
+</form>
+{% endblock %}
