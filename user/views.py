@@ -3,7 +3,13 @@ from user.forms import RegistrationForm,LoginForm
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from .models import People
+from . import serializers
 from django.contrib.auth import authenticate, login, logout
+from rest_framework.views import APIView
+from rest_framework import  viewsets
+from .serializers import PeopleSerializer
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
 
 
 def index(request):
@@ -63,3 +69,16 @@ def Login(request):
 def Logout(request):
     logout(request)
     return HttpResponseRedirect('/user/login')
+
+@permission_classes([])
+class PeopleList(viewsets.ModelViewSet):
+
+    queryset = People.objects.all()
+    serializer_class = serializers.PeopleSerializer
+
+    def perform_create(self, serializer):
+        # serializer.validated_data.update({'company_id': get_company_id(self.request)})
+        super().perform_create(serializer)
+
+    def get_queryset(self):
+        return super().get_queryset()
