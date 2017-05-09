@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from .models import People
 from . import serializers
 from django.contrib.auth import authenticate, login, logout
-from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import  viewsets
 from .serializers import PeopleSerializer
 from rest_framework.decorators import api_view, permission_classes
@@ -83,7 +83,7 @@ class PeopleList(viewsets.ModelViewSet):
         return super().get_queryset()
 
 
-@permission_classes([])
+@permission_classes([IsAuthenticated])
 class UserList(viewsets.ModelViewSet):
 
     queryset = User.objects.all()
