@@ -6,6 +6,7 @@ from rest_framework.routers import SimpleRouter
 router = SimpleRouter()
 
 router.register('people', views.PeopleList, 'people')
+router.register('register', views.UserList, 'register')
 
 urlpatterns = [
     url(r'^api/', include(router.urls)),

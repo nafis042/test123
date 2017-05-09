@@ -1,5 +1,5 @@
-from django.http import HttpResponse,HttpResponseRedirect
-from user.forms import RegistrationForm,LoginForm
+from django.http import HttpResponse, HttpResponseRedirect
+from user.forms import RegistrationForm, LoginForm
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from .models import People
@@ -22,7 +22,6 @@ def registration(request):
         if request.method == 'POST':
             form = RegistrationForm(request.POST)
             if form.is_valid():
-                print("asche")
                 user = User.objects.create_user(username=form.cleaned_data['first_name'],
                                                 email=form.cleaned_data['email'],
                                                 password=form.cleaned_data['password'],
@@ -62,7 +61,6 @@ def Login(request):
     else:
         ''' user is not submitting the form, show the login form '''
         form = LoginForm()
-        context = {'form': form}
         return render(request, "login.html", {'form': form})
 
 
@@ -70,11 +68,26 @@ def Logout(request):
     logout(request)
     return HttpResponseRedirect('/user/login')
 
+
 @permission_classes([])
 class PeopleList(viewsets.ModelViewSet):
 
     queryset = People.objects.all()
     serializer_class = serializers.PeopleSerializer
+
+    def perform_create(self, serializer):
+        # serializer.validated_data.update({'company_id': get_company_id(self.request)})
+        super().perform_create(serializer)
+
+    def get_queryset(self):
+        return super().get_queryset()
+
+
+@permission_classes([])
+class UserList(viewsets.ModelViewSet):
+
+    queryset = User.objects.all()
+    serializer_class = serializers.UserSerializer
 
     def perform_create(self, serializer):
         # serializer.validated_data.update({'company_id': get_company_id(self.request)})
