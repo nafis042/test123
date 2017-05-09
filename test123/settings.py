@@ -25,7 +25,7 @@ SECRET_KEY = '^#-!)ny$3=&1mcvp1l=er9!38ou@8!&q0jd=pv9@m*&9ug)5d%'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.0.106']
+ALLOWED_HOSTS = ['*']
 
 AUTH_PROFILE_MODULE='user.People'
 
