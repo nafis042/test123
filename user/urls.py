@@ -18,6 +18,7 @@ urlpatterns = [
     url(r'^api/token/refresh/$', jwt.refresh_jwt_token),
     url(r'^api/token/verify/$', jwt.verify_jwt_token),
     url(r'^api/token/$', jwt.obtain_jwt_token),
+    url(r'^parse/$', views.parse, name='parse'),
 
 ]
 
