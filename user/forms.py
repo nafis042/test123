@@ -1,7 +1,7 @@
 from  django import  forms
 from django.contrib.auth.models import User
 from django.forms import ModelForm
-from .models import People
+from .models import People, File, Plot
 
 
 class RegistrationForm(ModelForm):
@@ -22,3 +22,15 @@ class RegistrationForm(ModelForm):
 class LoginForm(forms.Form):
     username = forms.CharField(label=(u'User Name'))
     password = forms.CharField(label=(u'Password'), widget=forms.PasswordInput(render_value=False))
+
+
+class UploadForm(ModelForm):
+    class Meta:
+        model = File
+        fields = ['file']
+
+
+class UpdateForm(ModelForm):
+    class Meta:
+        model = Plot
+        fields = ['area_id', 'plot_id', 'name', 'description', 'lat', 'lng', 'alt', 'type', 'polygon']

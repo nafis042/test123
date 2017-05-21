@@ -19,6 +19,9 @@ urlpatterns = [
     url(r'^api/token/verify/$', jwt.verify_jwt_token),
     url(r'^api/token/$', jwt.obtain_jwt_token),
     url(r'^parse/$', views.parse, name='parse'),
+    url(r'^upkml/$', views.upkml, name='upkml'),
+    url(r'^update/$', views.update, name='update'),
+    url(r'^check/$', views.check, name='update'),
 
 ]
 

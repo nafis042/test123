@@ -1,20 +1,139 @@
 from django.http import HttpResponse, HttpResponseRedirect
-from user.forms import RegistrationForm, LoginForm
+from user.forms import RegistrationForm, LoginForm, UploadForm, UpdateForm
 from django.shortcuts import render
 from django.contrib.auth.models import User
-from .models import People, Plot, Public, Area
+from .models import People, Plot, Public, Area, File
 from . import serializers
 from django.contrib.auth import authenticate, login, logout
 from rest_framework.permissions import IsAuthenticated
-from rest_framework import  viewsets
+from rest_framework import viewsets
 from .serializers import PeopleSerializer
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.response import Response
 from fastkml import kml
+from shapely.geometry import Point, LineString, Polygon
+from shapely import geometry
+from django.core.files import File
+import os
 
 
 def index(request):
-    return HttpResponse("This is User Page")
+    return render(request, "base.html")
+
+
+def upkml(request):
+    if request.method == 'POST':
+        form = UploadForm(request.POST, request.FILES or None)
+        if form.is_valid():
+            file = form.save(commit=False)
+            file.save()
+            uploaded_files = request.FILES['file']
+            print(uploaded_files.name)
+            temp = uploaded_files.name.split('_')
+            path = 'Bangladesh/' + temp[0] + '/' + temp[1]
+            os.makedirs(path, exist_ok=True)
+            path += '/' + uploaded_files.name
+            with open(path, 'wb+') as destination:
+                for chunk in uploaded_files.chunks():
+                    destination.write(chunk)
+        return render(request, "base.html")
+    else:
+        form = UploadForm()
+        return render(request, "upkml.html", {'form': form})
+
+
+def update(request):
+    if request.method == 'POST':
+        form = UploadForm(request.POST, request.FILES or None)
+        if form.is_valid():
+            uploaded_files = request.FILES['file']
+            temp = uploaded_files.name.split('_')
+            tempp = temp
+            path = 'Bangladesh/' + '/' + temp[0] + '/' + temp[1] + '/' + uploaded_files.name
+            with open(path, 'r') as myfile:
+                data = myfile.read()
+            print(data)
+            k = kml.KML()
+            k.from_string(data)
+            features = list(k.features())
+            print(len(features))
+            f2 = list(features[0].features())
+            print(len(f2))
+            print(f2[0].geometry)
+            if "POINT" in str(f2[0].geometry):
+                temp = str(f2[0].geometry).replace("POINT Z (", "").replace(")", "")
+                temp1 = temp.split()
+                latitude = temp1[0]
+                longitude = temp1[1]
+                altitude = temp1[2]
+                poly = "NULL"
+                print(latitude + " " + longitude + " " + altitude)
+            else:
+                poly = str(f2[0].geometry).replace("POLYGON Z ((", "").replace("))", "")
+                latitude = "NULL"
+                longitude = "NULL"
+                altitude = "NULL"
+                print(poly)
+            name = str(f2[0].name)
+            plot = tempp[2].replace(' ', '')[:-4].upper()
+            print(tempp[1])
+            form = UpdateForm(initial={'area_id': int(tempp[1]),
+                                       'plot_id': int(plot),
+                                       'lat': latitude,
+                                       'lng': longitude,
+                                       'alt': altitude,
+                                       'name': name,
+                                       'polygon': poly,
+                                       })
+            return render(request, "update.html", {'form': form})
+    else:
+        form = UploadForm()
+        return render(request, "upkml.html", {'form': form})
+
+
+def check(request):
+    print("asche")
+    if request.method == 'POST':
+        form = UpdateForm(request.POST, request.FILES or None)
+        if form.is_valid():
+            area = str(form.cleaned_data['area_id'])
+            plot = str(form.cleaned_data['plot_id'])
+            path = 'Bangladesh' + '/' + '1' + '/' + area + '/' + '1_' + area + '_' + plot + '.kml'
+            print(path)
+            os.remove(path)
+            k = kml.KML()
+            ns = '{http://www.opengis.net/kml/2.2}'
+            d = kml.Document(ns, 'docid', 'docname', 'docdesc')
+            k.append(d)
+            desc = area + ' ' + plot + ' ' + form.cleaned_data['description'] + ' ' + form.cleaned_data['type']
+            p = kml.Placemark(ns, 'id', form.cleaned_data['name'], desc)
+            list = []
+            print('full data')
+            print(form.cleaned_data['polygon'])
+            if 'NULL' in form.cleaned_data['polygon']:
+                p.geometry = Point(float(form.cleaned_data['lat']), float(form.cleaned_data['lng']), float(form.cleaned_data['alt']))
+            else:
+                temp = form.cleaned_data['polygon']
+                temp = temp.replace(', ', ',')
+                temp1 = temp.split(',')
+                for i in temp1:
+                    strr = i
+                    str1 = strr.split(' ')
+                    print(str1)
+                    list_temp = []
+                    list_temp.append(float(str1[0]))
+                    list_temp.append(float(str1[1]))
+                    list_temp.append(float(str1[2]))
+                    list.append(list_temp)
+                    print(list)
+                p.geometry = Polygon(list)
+            d.append(p)
+            out = open(path, 'w+')
+            final = k.to_string(prettyprint=True)
+            out.write(final)
+            out.close()
+            print(k.to_string(prettyprint=True))
+
+    return render(request, "base.html")
 
 
 def registration(request):
@@ -45,7 +164,7 @@ def registration(request):
 
 def Login(request):
     if request.user.is_authenticated():
-        return HttpResponseRedirect('/')
+        return HttpResponseRedirect('/user/')
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():

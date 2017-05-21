@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+<form action="/user/check/" method="post">
+{% csrf_token %}
+<div class="register_div">
+
+        <p>Area Id:</p>
+        <p>{{ form.area_id|default_if_none:"aaa" }}</p>
+</div>
+
+<div class="register_div">
+
+        <p>Plot_id:</p>
+        <p>{{ form.plot_id }}</p>
+</div>
+
+<div class="register_div">
+
+        <p>latitude:</p>
+        <p>{{ form.lat }}</p>
+</div>
+<div class="register_div">
+
+        <p>longitude:</p>
+        <p>{{ form.lng }}</p>
+</div>
+<div class="register_div">
+
+        <p>Altitude:</p>
+        <p>{{ form.alt }}</p>
+</div>
+    <div class="register_div">
+
+        <p>Name:</p>
+        <p>{{ form.name }}</p>
+</div>
+
+    <div class="register_div">
+
+        <p>Description:</p>
+        <p>{{ form.description }}</p>
+</div>
+
+    <div class="register_div">
+
+        <p>Type:</p>
+        <p>{{ form.type }}</p>
+</div>
+
+    <div class="register_div">
+
+        <p>Polygon:</p>
+        <p>{{ form.polygon }}</p>
+</div>
+
+<p><input type="submit" alt="register" /></p>
+</form>
+{% endblock %}

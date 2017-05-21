@@ -45,3 +45,8 @@ class People(models.Model):
 
     def __str__(self):
         return self.first_name
+
+
+class File(models.Model):
+    file = models.FileField(null=True, blank=True)
+
