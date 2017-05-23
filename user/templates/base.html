@@ -1,24 +1,197 @@
 <html>
 <head>
-        {% block extrahead %}
 
-        {% endblock %}
+{% load staticfiles %}
+        <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}"/>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+        <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 </head>
 <body>
-<div id="pageContainer">
-        <div id="nav_top_right">
-                {% if user.is_authenticated %}
-                <p>Hi {{user.first_name}}!!!</p>
-                <p><a href="/user/logout/">  Logout</a></p>
-                {% else %}<p><a href="/user/login/">Login</a></p>{% endif %}
-        </div>
-        {% block content %}
-        <div id="nav">
-        <a href="upkml"> upload kml </a>
-        </div>
-        <a href="update"> update or change </a>
 
-        {% endblock %}
+
+
+<div id="pageContainer">
+
+
+       <nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+
+        <!-- Header -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/user">Home</a>
+        </div>
+
+        <!-- Items -->
+        <div class="collapse navbar-collapse" id="topNavBar">
+            <ul class="nav navbar-nav">
+                <li class=""><a href="/user/upkml"><span class="glyphicon glyphicon-save-file" aria-hidden="true"></span>&nbsp; Upload</a></li>
+                <li class=""><a href="/user/update"><span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>&nbsp; Update</a></li>
+                <li class=""><a href="/user/plot"><span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>&nbsp; Plot</a></li>
+            </ul>
+            <form class="navbar-form navbar-left" role="search" method="get" action="">
+                <div class="form-group">
+                    <input type="text" class="form-control" name="q" value="{{ request.GET.q }}">
+                </div>
+                <button type="submit" class="btn btn-default">Search</button>
+            </form>
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="/user">
+                        <span class="glyphicon glyphicon-user" aria-hidden="true"></span>&nbsp;Hi {{user.first_name}}
+                    </a>
+                </li>
+                <li>
+                    <a href="/user/logout">
+                        <span class="glyphicon glyphicon-off" aria-hidden="true"></span>&nbsp; Logout
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+</nav>
+
+
 </div>
+
+{% block body %}
+{% endblock %}
+
+<!--
+		<div class="buttons">
+			<a class="twitter" href=""><img src="images/twitter.png" /></a>
+			<a class="facebook" href=""><img src="images/facebook.png" /></a>
+			<a class="dribble" href=""><img src="images/dribble.png" /></a>
+			<a class="rss" href=""><img src="images/rss.png" /></a>
+		</div>
+		<div class="footer">
+			CSS3 Circle Social Buttons by <a href="http://azmind.com">Azmind.com</a> - Follow me on <a href="http://www.facebook.com/pages/Azmindcom/196582707093191">Facebook</a> and <a href="http://twitter.com/anli_zaimi">Twitter</a>!
+		</div>
+
+
 </body>
 </html>
+
+<style>
+        /* -------------------------------------------------------
+
+	Description: CSS3 Circle Social Buttons
+	Version: 1.0
+	Author: Anli Zaimi
+	Author URI: http://azmind.com
+
+------------------------------------------------------- */
+
+
+body {
+	text-align: center;
+	font-family: Arial;
+	background: #f8f8f8 url(images/bg.jpg);
+}
+
+.buttons {
+	margin-top: 160px;
+}
+
+.buttons a {
+	margin-right: 30px;
+	width: 64px;
+	height: 64px;
+	display: inline-block;
+	position: relative;
+	line-height: 64px;
+	background-color: #eaeaea;
+	background-image: -webkit-gradient(linear, left top, left bottom, from(#f6f6f6), to(#eaeaea));
+	background-image: -webkit-linear-gradient(top, #f6f6f6, #eaeaea);
+	background-image: -moz-linear-gradient(top, #f6f6f6, #eaeaea);
+	background-image: -ms-linear-gradient(top, #f6f6f6, #eaeaea);
+	background-image: -o-linear-gradient(top, #f6f6f6, #eaeaea);
+	background-image: linear-gradient(top, #f6f6f6, #eaeaea);
+	-moz-border-radius: 32px;
+	-webkit-border-radius: 32px;
+	border-radius: 32px;
+	-moz-box-shadow: 0 1px 1px rgba(0, 0, 0, .25), 0 2px 3px rgba(0, 0, 0, .1);
+	-webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, .25), 0 2px 3px rgba(0, 0, 0, .1);
+	box-shadow: 0 1px 1px rgba(0, 0, 0, .25), 0 2px 3px rgba(0, 0, 0, .1);
+}
+
+.buttons a:active {
+	top: 1px;
+	background-image: -webkit-gradient(linear, left top, left bottom, from(#eaeaea), to(#f6f6f6));
+	background-image: -webkit-linear-gradient(top, #eaeaea, #f6f6f6);
+	background-image: -moz-linear-gradient(top, #eaeaea, #f6f6f6);
+	background-image: -ms-linear-gradient(top, #eaeaea, #f6f6f6);
+	background-image: -o-linear-gradient(top, #eaeaea, #f6f6f6);
+	background-image: linear-gradient(top, #eaeaea, #f6f6f6);
+}
+
+.buttons a::before{
+		content: '';
+		position: absolute;
+		z-index: -1;
+		top: -8px;
+		right: -8px;
+		bottom: -8px;
+		left: -8px;
+		background-color: #eaeaea;
+		-moz-border-radius: 140px;
+		-webkit-border-radius: 140px;
+		border-radius: 140px;
+	opacity: 0.5;
+}
+
+.buttons a:active::before {
+	top: -9px;
+}
+
+.buttons a:hover::before { opacity: 1; }
+
+.buttons a.twitter:hover::before {
+	background-color: #c6f0f8;
+}
+
+.buttons a.facebook:hover::before {
+	background-color: #dae1f0;
+}
+
+.buttons a.dribble:hover::before {
+	background-color: #fadae6;
+}
+
+.buttons a.rss:hover::before {
+	background-color: #f8ebb6;
+}
+
+.twitter img { vertical-align: -7px; }
+.dribble img { vertical-align: -12px; }
+.facebook img { vertical-align: -12px;}
+.rss img { vertical-align: -7px;}
+
+.buttons a img { border: 0; }
+
+
+.footer {
+	width: 600px;
+	margin: auto;
+	margin-top: 100px;
+	font-size: 15px;
+	font-weight: bold;
+	color: #cdcdcd;
+	text-shadow: 1px 2px 0 #fff;
+}
+
+.footer a { color: #bebebe; text-decoration: none; }
+.footer a:hover { color: #bebebe; text-decoration: none; border-bottom: 1px dashed #cdcdcd; }
+
+
+
+
+
+
+</style>

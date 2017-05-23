@@ -1,6 +1,6 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from user.forms import RegistrationForm, LoginForm, UploadForm, UpdateForm
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from .models import People, Plot, Public, Area, File
 from . import serializers
@@ -12,7 +12,8 @@ from rest_framework.decorators import api_view, permission_classes
 from fastkml import kml
 from shapely.geometry import Point, LineString, Polygon
 from shapely import geometry
-from django.core.files import File
+from django.views import generic
+from pathlib import Path
 import os
 
 
@@ -35,10 +36,17 @@ def upkml(request):
             with open(path, 'wb+') as destination:
                 for chunk in uploaded_files.chunks():
                     destination.write(chunk)
-        return render(request, "base.html")
+            parse(request, path)
+       # return render(request, "base.html")
+        return redirect('/user')
     else:
         form = UploadForm()
         return render(request, "upkml.html", {'form': form})
+
+
+def up(request, plot_id):
+    plot = get_object_or_404(Plot, pk=plot_id)
+    return render(request, "update.html", {'plot': plot})
 
 
 def update(request):
@@ -84,22 +92,44 @@ def update(request):
                                        'name': name,
                                        'polygon': poly,
                                        })
-            return render(request, "update.html", {'form': form})
+            return render(request, "update.html", {'form': form,
+                                                   'area_id': int(tempp[1]),
+                                                   'plot_id': int(plot),
+                                                   'lat': latitude,
+                                                   'lng': longitude,
+                                                   'alt': altitude,
+                                                   'name': name,
+                                                   'polygon': poly,
+                                                   })
     else:
         form = UploadForm()
         return render(request, "upkml.html", {'form': form})
 
 
-def check(request):
+def check(request, plot_id):
     print("asche")
     if request.method == 'POST':
-        form = UpdateForm(request.POST, request.FILES or None)
+        form = UpdateForm(request.POST)
         if form.is_valid():
+            print("asche")
+            t = Plot.objects.get(id=plot_id)
+            t.area_id = form.cleaned_data['area_id']
+            t.plot_id = form.cleaned_data['plot_id']
+            t.lat = form.cleaned_data['lat']
+            t.lng = form.cleaned_data['lng']
+            t.alt = form.cleaned_data['alt']
+            t.name = form.cleaned_data['name']
+            t.description = form.cleaned_data['description']
+            t.type = form.cleaned_data['type']
+            t.polygon = form.cleaned_data['polygon']
+            t.save()
             area = str(form.cleaned_data['area_id'])
             plot = str(form.cleaned_data['plot_id'])
             path = 'Bangladesh' + '/' + '1' + '/' + area + '/' + '1_' + area + '_' + plot + '.kml'
             print(path)
-            os.remove(path)
+            file = Path(path)
+            if file.exists():
+                os.remove(path)
             k = kml.KML()
             ns = '{http://www.opengis.net/kml/2.2}'
             d = kml.Document(ns, 'docid', 'docname', 'docdesc')
@@ -132,8 +162,9 @@ def check(request):
             out.write(final)
             out.close()
             print(k.to_string(prettyprint=True))
-
-    return render(request, "base.html")
+        else:
+            print(form.errors)
+    return redirect('/user')
 
 
 def registration(request):
@@ -217,8 +248,8 @@ class UserList(viewsets.ModelViewSet):
         return super().get_queryset()
 
 
-def parse(request):
-    with open('plot.kml', 'r') as myfile:
+def parse(request,path):
+    with open(path, 'r') as myfile:
         data = myfile.read()
 
    # print(data)
@@ -234,6 +265,7 @@ def parse(request):
         if "POINT" in str(i.geometry):
            # print("asche")
             temp = str(i.geometry).replace("POINT (", "").replace(")", "")
+            temp = temp.replace("POINT Z (", "").replace(")", "")
             temp1 = temp.split()
             latitude = temp1[0]
             longitude = temp1[1]
@@ -242,6 +274,7 @@ def parse(request):
             print(latitude+" "+longitude+" "+altitude)
         else:
             poly = str(i.geometry).replace("POLYGON((", "").replace("))", "")
+            poly = poly.replace("POLYGON Z ((", "").replace("))", "")
             latitude = "NULL"
             longitude = "NULL"
             altitude = "NULL"
@@ -284,6 +317,17 @@ def parse(request):
                             type=type,
                             polygon=poly)
             public.save()
-
-
     return HttpResponse(data)
+
+
+class PlotView(generic.ListView):
+    template_name = 'plot.html'
+
+    def get_queryset(self):
+        return Plot.objects.all()
+
+
+def detail(request, plot_id):
+        plot = get_object_or_404(Plot, pk=plot_id)
+        return render(request, 'detail.html', {'plot': plot})
+

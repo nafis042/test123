@@ -1,0 +1,34 @@
+#{% extends "base.html" %}
+{% load staticfiles %}
+{% block body %}
+<div class="albums-container container-fluid">
+
+    <!-- Albums -->
+    <div class="row">
+        <div class="col-sm-12">
+            <h3>{{ user.username }}'s Plots</h3>
+        </div>
+            {% for plot in object_list %}
+                <div class="col-sm-4 col-lg-2">
+                    <div class="thumbnail">
+                        <a href="/user/plot/">
+                            <img src="/media/twitter.png" class="img-responsive">
+                        </a>
+                        <div class="caption">
+                            <h2>{{ plot.name }}</h2>
+                            <h4>{{ plot.description }}</h4>
+
+                            <!-- View Details -->
+                            <a href="detail/{{plot.pk}}" class="btn btn-primary btn-sm" role="button">View Details</a>
+                            <a href="update/{{plot.pk}}" class="btn btn-primary btn-sm" role="button">Update</a>
+
+                        </div>
+                    </div>
+                </div>
+                {% cycle '' '' '' '' '' '<div class="clearfix visible-lg"></div>' %}
+            {% endfor %}
+
+    </div>
+
+</div>
+{% endblock %}
