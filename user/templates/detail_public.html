@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block title %}{{ public }}{% endblock %}
+
+
+{% block body %}
+<div class="container-fluid songs-container">
+
+    <div class="row">
+
+        <!-- Left Album Info -->
+        <div class="col-sm-4 col-md-3">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <a href="#">
+                            <img src="/media/twitter.png" class="img-responsive">
+
+                    </a>
+                    <h1>{{ public.name }} <small>{{ public.description }}</small></h1>
+                    <h2>{{ public.type }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Song Info -->
+        <div class="col-sm-8 col-md-9">
+
+
+            <div class="panel panel-default">
+                <div class="panel-body">
+
+                    <h3>Details</h3>
+
+                    {% if error_message %}
+                        <p><strong>{{ error_message }}</strong></p>
+                    {% endif %}
+
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Latitude</th>
+                            <th>Longitude</th>
+                            <th>Altitude</th>
+                            <th>Type</th>
+                            <th>Floor</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{ public.lat }}</td>
+                                <td>{{ public.lng }}</td>
+                                <td>{{ public.alt }}</td>
+                                <td>{{ public.type }}</td>
+                                <td>{{ public.floor_id }}</td>
+
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

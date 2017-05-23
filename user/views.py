@@ -1,5 +1,5 @@
 from django.http import HttpResponse, HttpResponseRedirect
-from user.forms import RegistrationForm, LoginForm, UploadForm, UpdateForm
+from user.forms import RegistrationForm, LoginForm, UploadForm, UpdateForm, UpdatePublicForm
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from .models import People, Plot, Public, Area, File
@@ -44,69 +44,12 @@ def upkml(request):
         return render(request, "upkml.html", {'form': form})
 
 
-def up(request, plot_id):
+def update_plot(request, plot_id):
     plot = get_object_or_404(Plot, pk=plot_id)
     return render(request, "update.html", {'plot': plot})
 
 
-def update(request):
-    if request.method == 'POST':
-        form = UploadForm(request.POST, request.FILES or None)
-        if form.is_valid():
-            uploaded_files = request.FILES['file']
-            temp = uploaded_files.name.split('_')
-            tempp = temp
-            path = 'Bangladesh/' + '/' + temp[0] + '/' + temp[1] + '/' + uploaded_files.name
-            with open(path, 'r') as myfile:
-                data = myfile.read()
-            print(data)
-            k = kml.KML()
-            k.from_string(data)
-            features = list(k.features())
-            print(len(features))
-            f2 = list(features[0].features())
-            print(len(f2))
-            print(f2[0].geometry)
-            if "POINT" in str(f2[0].geometry):
-                temp = str(f2[0].geometry).replace("POINT Z (", "").replace(")", "")
-                temp1 = temp.split()
-                latitude = temp1[0]
-                longitude = temp1[1]
-                altitude = temp1[2]
-                poly = "NULL"
-                print(latitude + " " + longitude + " " + altitude)
-            else:
-                poly = str(f2[0].geometry).replace("POLYGON Z ((", "").replace("))", "")
-                latitude = "NULL"
-                longitude = "NULL"
-                altitude = "NULL"
-                print(poly)
-            name = str(f2[0].name)
-            plot = tempp[2].replace(' ', '')[:-4].upper()
-            print(tempp[1])
-            form = UpdateForm(initial={'area_id': int(tempp[1]),
-                                       'plot_id': int(plot),
-                                       'lat': latitude,
-                                       'lng': longitude,
-                                       'alt': altitude,
-                                       'name': name,
-                                       'polygon': poly,
-                                       })
-            return render(request, "update.html", {'form': form,
-                                                   'area_id': int(tempp[1]),
-                                                   'plot_id': int(plot),
-                                                   'lat': latitude,
-                                                   'lng': longitude,
-                                                   'alt': altitude,
-                                                   'name': name,
-                                                   'polygon': poly,
-                                                   })
-    else:
-        form = UploadForm()
-        return render(request, "upkml.html", {'form': form})
-
-
-def check(request, plot_id):
+def check_plot(request, plot_id):
     print("asche")
     if request.method == 'POST':
         form = UpdateForm(request.POST)
@@ -327,7 +270,86 @@ class PlotView(generic.ListView):
         return Plot.objects.all()
 
 
+def public(request, plot_id):
+    queryset = Public.objects.filter(plot_code=plot_id)
+    plot = get_object_or_404(Plot, pk=plot_id)
+    return render(request, 'public.html', {'Pub': queryset, 'name': plot.name})
+
+
+def detail_public(request, id):
+    pub = get_object_or_404(Public, pk=id)
+    return render(request, 'detail_public.html', {'public': pub})
+
+
 def detail(request, plot_id):
         plot = get_object_or_404(Plot, pk=plot_id)
         return render(request, 'detail.html', {'plot': plot})
 
+
+def update_public(request, id):
+    pub = get_object_or_404(Public, pk=id)
+    return render(request, "update_public.html", {'public': pub})
+
+
+def check_public(request, id):
+    if request.method == 'POST':
+        form = UpdatePublicForm(request.POST)
+        if form.is_valid():
+            print("asche")
+            t = Public.objects.get(pk=id)
+            t.area_id = form.cleaned_data['plot_code']
+            t.plot_id = form.cleaned_data['floor_id']
+            t.lat = form.cleaned_data['lat']
+            t.lng = form.cleaned_data['lng']
+            t.alt = form.cleaned_data['alt']
+            t.name = form.cleaned_data['name']
+            t.description = form.cleaned_data['description']
+            t.type = form.cleaned_data['type']
+            t.polygon = form.cleaned_data['polygon']
+            t.save()
+            plott = Plot.objects.get(plot_id=t.plot_code.plot_id)
+            area = str(plott.area_id.pk)
+            plot = str(form.cleaned_data['plot_code'])
+            path = 'Bangladesh' + '/' + '1' + '/' + area + '/' + plot + '/' + '1_' + area + '_' + plot + '_' + id + '.kml'
+            directory = 'Bangladesh' + '/' + '1' + '/' + area + '/' + plot
+            print(path)
+            file = Path(path)
+            if file.exists():
+                os.remove(path)
+            else:
+                os.makedirs(directory, exist_ok=True)
+            k = kml.KML()
+            ns = '{http://www.opengis.net/kml/2.2}'
+            d = kml.Document(ns, 'docid', 'docname', 'docdesc')
+            k.append(d)
+            desc = area + ' ' + plot + ' ' + form.cleaned_data['description'] + ' ' + form.cleaned_data['type'] + ' ' + str(form.cleaned_data['floor_id'])
+            p = kml.Placemark(ns, 'id', form.cleaned_data['name'], desc)
+            list = []
+            print('full data')
+            print(form.cleaned_data['polygon'])
+            if 'NULL' in form.cleaned_data['polygon']:
+                p.geometry = Point(float(form.cleaned_data['lat']), float(form.cleaned_data['lng']), float(form.cleaned_data['alt']))
+            else:
+                temp = form.cleaned_data['polygon']
+                temp = temp.replace(', ', ',')
+                temp1 = temp.split(',')
+                for i in temp1:
+                    strr = i
+                    str1 = strr.split(' ')
+                    print(str1)
+                    list_temp = []
+                    list_temp.append(float(str1[0]))
+                    list_temp.append(float(str1[1]))
+                    list_temp.append(float(str1[2]))
+                    list.append(list_temp)
+                    print(list)
+                p.geometry = Polygon(list)
+            d.append(p)
+            out = open(path, 'w')
+            final = k.to_string(prettyprint=True)
+            out.write(final)
+            out.close()
+            print(k.to_string(prettyprint=True))
+        else:
+            print(form.errors)
+    return redirect('/user')

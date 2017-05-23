@@ -1,7 +1,7 @@
 from  django import  forms
 from django.contrib.auth.models import User
 from django.forms import ModelForm
-from .models import People, File, Plot
+from .models import People, File, Plot, Public
 
 
 class RegistrationForm(ModelForm):
@@ -34,3 +34,9 @@ class UpdateForm(ModelForm):
     class Meta:
         model = Plot
         fields = ['area_id', 'plot_id', 'name', 'description', 'lat', 'lng', 'alt', 'type', 'polygon']
+
+
+class UpdatePublicForm(ModelForm):
+    class Meta:
+        model = Public
+        fields = ['plot_code', 'floor_id', 'name', 'description', 'lat', 'lng', 'alt', 'type', 'polygon']

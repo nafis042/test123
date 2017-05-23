@@ -8,7 +8,6 @@ from user import views
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^user/', include('user.urls')),
-    url(r'^check/$', views.check, name='update'),
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)
 

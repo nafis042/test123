@@ -6,22 +6,21 @@
     <!-- Albums -->
     <div class="row">
         <div class="col-sm-12">
-            <h3>{{ user.username }}'s Plots</h3>
+            <h3>{{ name }}'s Floor Infromation</h3>
         </div>
-            {% for plot in object_list %}
+            {% for public in Pub %}
                 <div class="col-sm-4 col-lg-2">
                     <div class="thumbnail">
                         <a href="/user/plot/">
                             <img src="/media/twitter.png" class="img-responsive">
                         </a>
                         <div class="caption">
-                            <h2>{{ plot.name }}</h2>
-                            <h4>{{ plot.description }}</h4>
+                            <h2>{{ public.name }}</h2>
+                            <h4>{{ public.description }}</h4>
 
                             <!-- View Details -->
-                            <a href="detail/{{plot.pk}}" class="btn btn-primary btn-sm" role="button">View Details</a>
-                            <a href="update_plot/{{plot.pk}}" class="btn btn-primary btn-sm" role="button">Update</a>
-                            <a href="{{plot.pk}}" class="btn btn-primary btn-sm" role="button">Open</a>
+                            <a href="detail/{{public.pk}}" class="btn btn-primary btn-sm" role="button">View Details</a>
+                            <a href="update_public/{{public.pk}}" class="btn btn-primary btn-sm" role="button">Update</a>
                         </div>
                     </div>
                 </div>

@@ -19,12 +19,14 @@ urlpatterns = [
     url(r'^api/token/verify/$', jwt.verify_jwt_token),
     url(r'^api/token/$', jwt.obtain_jwt_token),
     url(r'^upkml/$', views.upkml, name='upkml'),
-    url(r'^update/$', views.update, name='update'),
-    url(r'^check/(?P<plot_id>[0-9]+)/$', views.check, name='update'),
+    url(r'^check/(?P<plot_id>[0-9]+)/$', views.check_plot, name='check_plot'),
     url(r'^plot/$', views.PlotView.as_view(), name='plot'),
     url(r'^plot/detail/(?P<plot_id>[0-9]+)/$', views.detail, name='detail'),
-    url(r'^plot/update/(?P<plot_id>[0-9]+)/$', views.up, name='up'),
-
+    url(r'^plot/update_plot/(?P<plot_id>[0-9]+)/$', views.update_plot, name='update_plot'),
+    url(r'^plot/(?P<plot_id>[0-9]+)/$', views.public, name='public'),
+    url(r'^plot/([0-9]+)/detail/(?P<id>[0-9]+)/$', views.detail_public, name='public_detail'),
+    url(r'^plot/([0-9]+)/update_public/(?P<id>[0-9]+)/$', views.update_public, name='update_public'),
+    url(r'^check_public/(?P<id>[0-9]+)/$', views.check_public, name='check_public'),
 ]
 
 

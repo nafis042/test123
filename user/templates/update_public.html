@@ -3,51 +3,51 @@
 
 <div class="container">
 
-  <form id="contact" action="/user/check_plot/{{plot.pk}}/" method="post">
+  <form id="contact" action="/user/check_public/{{public.pk}}/" method="post">
       {% csrf_token %}
     <h3>Update Information</h3>
 
     <fieldset>
-        <strong><em>Area Id:</em></strong>
-        <input name = "area_id" value="{{plot.area_id}}" type="text" tabindex="1" required autofocus>
+        <strong><em>Plot Id:</em></strong>
+        <input name = "plot_code" value="{{public.plot_code}}" type="text" tabindex="1" required autofocus>
     </fieldset>
 
     <fieldset>
-        <strong><em>Plot_id:</em></strong>
-        <input name = "plot_id" value="{{plot.plot_id}}" type="text" tabindex="2" required>
+        <strong><em>Floor_id:</em></strong>
+        <input name = "floor_id" value="{{public.floor_id}}" type="text" tabindex="2" required>
     </fieldset>
 
     <fieldset>
         <strong><em>Latitude:</em></strong>
-      <input name = "lat" value="{{plot.lat}}" type="text" tabindex="3" required>
+      <input name = "lat" value="{{public.lat}}" type="text" tabindex="3" required>
     </fieldset>
     <fieldset>
         <strong><em>Longitude:</em></strong>
-      <input name = "lng" value="{{plot.lng}}" type="text" tabindex="4" required>
+      <input name = "lng" value="{{public.lng}}" type="text" tabindex="4" required>
     </fieldset>
     <fieldset>
         <strong><em>Altitude:</em></strong>
-      <input name = "alt" value="{{plot.alt}}" type="text" tabindex="5" required>
+      <input name = "alt" value="{{public.alt}}" type="text" tabindex="5" required>
     </fieldset>
 
      <fieldset>
         <strong><em>Name:</em></strong>
-      <input name = "name" value="{{plot.name}}" type="text" tabindex="6" required>
+      <input name = "name" value="{{public.name}}" type="text" tabindex="6" required>
     </fieldset>
 
      <fieldset>
         <strong><em>Description:</em></strong>
-      <input name = "description" value="{{plot.description}}" type="text" tabindex="7" required>
+      <input name = "description" value="{{public.description}}" type="text" tabindex="7" required>
     </fieldset>
 
      <fieldset>
         <strong><em>Type:</em></strong>
-      <input name = "type" value="{{plot.type}}" type="text" tabindex="8" required>
+      <input name = "type" value="{{public.type}}" type="text" tabindex="8" required>
     </fieldset>
 
      <fieldset>
         <strong><em>Polygon:</em></strong>
-      <input name = "polygon" value="{{plot.polygon}}" type="text" tabindex="9" required>
+      <input name = "polygon" value="{{public.polygon}}" type="text" tabindex="9" required>
     </fieldset>
 
 
