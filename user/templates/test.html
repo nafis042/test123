@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block title %}{{ plot }}{% endblock %}
+
+
+{% block body %}
+<div class="container-fluid songs-container">
+
+    <div class="row">
+
+        <!-- Left Album Info -->
+        <div class="col-sm-6 col-md-6 col lg-6 col xs-6">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <h3>Plot List</h3>
+
+                    {% if error_message %}
+                        <p><strong>{{ error_message }}</strong></p>
+                    {% endif %}
+                    <div class="scrollable">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Area Id</th>
+                                <th>Plot Id</th>
+                                <th>Name</th>
+                                <th>Description</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                                {% for p in Plot %}
+                                <tr>
+
+                                    <td>{{ p.area_id }}</td>
+                                    <td>{{ p.plot_id }}</td>
+                                    <td>{{ p.name }}</td>
+                                    <td>{{ p.description }}</td>
+
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Song Info -->
+        <div class="col-sm-6 col-md-6 col lg-6 col xs-6">
+
+
+            <div class="panel panel-default">
+                <div class="panel-body">
+
+                    <h3>POI List</h3>
+
+                    {% if error_message %}
+                        <p><strong>{{ error_message }}</strong></p>
+                    {% endif %}
+
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Floor Id</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Type</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in Poi %}
+                            <tr>
+                                <td>{{ p.floor_id }}</td>
+                                <td>{{ p.name }}</td>
+                                <td>{{ p.description }}</td>
+                                <td>{{ p.type }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<style>
+    .scrollable{
+
+    height : 100px;
+    overflow : scroll;
+    }
+
+
+</style>
+
+{% endblock %}

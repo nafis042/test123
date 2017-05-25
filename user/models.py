@@ -39,12 +39,31 @@ class Public(models.Model):
         return self.name+" "+str(self.floor_id)
 
 
-class People(models.Model):
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
+class Floor(models.Model):
+    plot_id = models.ForeignKey(Plot, on_delete=models.CASCADE)
+    floor_id = models.CharField(max_length=1000)
+    description = models.CharField(default="NULL", max_length=1000)
 
     def __str__(self):
-        return self.first_name
+        return str(self.pk)
+
+
+class POI(models.Model):
+    uploader = models.ForeignKey(User, on_delete=models.CASCADE)
+    floor_id = models.CharField(max_length=1000)
+    name = models.CharField(max_length=100)
+    description = models.CharField(max_length=100, blank=True)
+    webaddress = models.CharField(default="NULL", max_length=100, blank=True)
+    mobile = models.CharField(max_length=15, blank=True)
+    lat = models.CharField(default="", max_length=100, blank=True)
+    lng = models.CharField(default="", max_length=100, blank=True)
+    alt = models.CharField(default="", max_length=100, blank=True)
+    type = models.CharField(default="", max_length=100, blank=True)
+    polygon = models.CharField(default="", max_length=1000, blank=True)
+    assigned = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.name+" "+str(self.floor_id)
 
 
 class File(models.Model):

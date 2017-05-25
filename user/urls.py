@@ -6,7 +6,6 @@ from rest_framework_jwt import views as jwt
 
 router = SimpleRouter()
 
-router.register('people', views.PeopleList, 'people')
 router.register('register', views.UserList, 'register')
 
 urlpatterns = [
@@ -27,6 +26,9 @@ urlpatterns = [
     url(r'^plot/([0-9]+)/detail/(?P<id>[0-9]+)/$', views.detail_public, name='public_detail'),
     url(r'^plot/([0-9]+)/update_public/(?P<id>[0-9]+)/$', views.update_public, name='update_public'),
     url(r'^check_public/(?P<id>[0-9]+)/$', views.check_public, name='check_public'),
+    url(r'^test/$', views.Test, name='test'),
+    url(r'^create_poi/$', views.create_poi, name='create_poi'),
+    url(r'^create_poi_form/$', views.create_poi_form, name='create_poi_form'),
 ]
 
 

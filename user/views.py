@@ -1,13 +1,12 @@
 from django.http import HttpResponse, HttpResponseRedirect
-from user.forms import RegistrationForm, LoginForm, UploadForm, UpdateForm, UpdatePublicForm
+from user.forms import RegistrationForm, LoginForm, UploadForm, UpdateForm, UpdatePOIForm, UpdatePublicForm
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
-from .models import People, Plot, Public, Area, File
+from .models import Plot, Public, Area, File, POI
 from . import serializers
 from django.contrib.auth import authenticate, login, logout
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
-from .serializers import PeopleSerializer
 from rest_framework.decorators import api_view, permission_classes
 from fastkml import kml
 from shapely.geometry import Point, LineString, Polygon
@@ -116,17 +115,13 @@ def registration(request):
         if request.method == 'POST':
             form = RegistrationForm(request.POST)
             if form.is_valid():
-                user = User.objects.create_user(username=form.cleaned_data['first_name'],
-                                                email=form.cleaned_data['email'],
-                                                password=form.cleaned_data['password'],
-                                                first_name=form.cleaned_data['first_name'],
-                                                last_name=form.cleaned_data['last_name'],
-
-                                                )
-                user.save()
-                people = People(first_name=form.cleaned_data['first_name'], last_name=form.cleaned_data['last_name'])
-                people.save()
-                return HttpResponse('Registration Done')
+                User.objects.create_user(username=form.cleaned_data['first_name'],
+                                         email=form.cleaned_data['email'],
+                                         password=form.cleaned_data['password'],
+                                         first_name=form.cleaned_data['first_name'],
+                                         last_name=form.cleaned_data['last_name'],
+                                         )
+                return HttpResponseRedirect('/user/login')
             else:
                 return render(request, "register.html", {'form': form})
 
@@ -161,20 +156,6 @@ def Login(request):
 def Logout(request):
     logout(request)
     return HttpResponseRedirect('/user/login')
-
-
-@permission_classes([])
-class PeopleList(viewsets.ModelViewSet):
-
-    queryset = People.objects.all()
-    serializer_class = serializers.PeopleSerializer
-
-    def perform_create(self, serializer):
-        # serializer.validated_data.update({'company_id': get_company_id(self.request)})
-        super().perform_create(serializer)
-
-    def get_queryset(self):
-        return super().get_queryset()
 
 
 @permission_classes([IsAuthenticated])
@@ -353,3 +334,39 @@ def check_public(request, id):
         else:
             print(form.errors)
     return redirect('/user')
+
+
+def Test(request):
+    plot = Plot.objects.all()
+    poi = POI.objects.filter(assigned=False, uploader=request.user)
+    return render(request, "test.html", {"Plot": plot, "Poi": poi})
+
+
+def create_poi(request):
+        poi = POI.objects.filter(assigned=False, uploader=request.user)
+        return render(request, "create_poi.html", { "Poi": poi})
+
+
+def create_poi_form(request):
+    if request.method == 'POST':
+        print("asche")
+        form = UpdatePOIForm(request.POST)
+        print(form.errors)
+        if form.is_valid():
+            print(request.user)
+            poi = POI(uploader=request.user,
+                      floor_id=form.cleaned_data['floor_id'],
+                      name=form.cleaned_data['name'],
+                      description=form.cleaned_data['description'],
+                      webaddress=form.cleaned_data['webaddress'],
+                      mobile=form.cleaned_data['mobile'],
+                      lat=form.cleaned_data['lat'],
+                      lng=form.cleaned_data['lng'],
+                      alt=form.cleaned_data['alt'],
+                      type=form.cleaned_data['type'],
+                      polygon=form.cleaned_data['polygon'])
+            poi.save()
+            return HttpResponseRedirect('/user')
+    else:
+        form = UpdatePOIForm()
+        return render(request, "create_poi_form.html", {'form': form})

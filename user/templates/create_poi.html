@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block title %}{{ plot }}{% endblock %}
+
+
+{% block body %}
+
+<script>
+function myFunction(){
+    var x = document.getElementById("myFile");
+    var txt = "";
+    if ('files' in x) {
+        if (x.files.length == 0) {
+            txt = "Select one or more files.";
+        } else {
+            for (var i = 0; i < x.files.length; i++) {
+                txt += "<br><strong>" + (i+1) + ". file</strong><br>";
+                var file = x.files[i];
+                if ('name' in file) {
+                    txt += "name: " + file.name + "<br>";
+                }
+                if ('size' in file) {
+                    txt += "size: " + file.size + " bytes <br>";
+                }
+            }
+        }
+    }
+    else {
+        if (x.value == "") {
+            txt += "Select one or more files.";
+        } else {
+            txt += "The files property is not supported by your browser!";
+            txt  += "<br>The path of the selected file: " + x.value; // If the browser does not support the files property, it will return the path of the selected file instead.
+        }
+    }
+    document.getElementById("demo").innerHTML = x;
+}
+</script>
+
+
+
+
+<div class="container-fluid songs-container">
+
+    <div class="row">
+
+        <!-- Left Album Info -->
+        <div class="col-sm-6 col-md-6 col lg-6 col xs-6">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <h3>Upload KML File</h3>
+                        <input type="file" id="myFile" multiple size="50" onchange="myFunction()">
+                        <p><input type="submit" alt="register" /></p>
+                        <p id="demo"></p>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Song Info -->
+        <div class="col-sm-6 col-md-6 col lg-6 col xs-6">
+
+
+            <div class="panel panel-default">
+                <div class="panel-body">
+
+                    <h3>POI List</h3>
+
+                    {% if error_message %}
+                        <p><strong>{{ error_message }}</strong></p>
+                    {% endif %}
+                    <div class="scrollable">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Floor Id</th>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Type</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in Poi %}
+                                <tr>
+                                    <td>{{ p.floor_id }}</td>
+                                    <td>{{ p.name }}</td>
+                                    <td>{{ p.description }}</td>
+                                    <td>{{ p.type }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<style>
+    .scrollable{
+
+    height : 100px;
+    overflow : scroll;
+    }
+
+
+</style>
+
+{% endblock %}
