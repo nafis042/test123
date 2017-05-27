@@ -8,19 +8,31 @@
 <script>
   $(document).ready(function(){
     $("#table tr").click(function(){
-   $(this).addClass('selected').siblings().removeClass('selected');
+    if($(this).hasClass('selected'))
+        $(this).removeClass('selected');
+    else
+        $(this).addClass('selected');
+});
+
+    $("#table-floor tr").click(function(){
+        $(this).addClass('selected').siblings().removeClass('selected');
 });
 
 $('.button').on('click', function(e){
+   var selectedIDs = "";
+   $("#table tr.selected").each(function(index, row) {
+      if(selectedIDs == "")
+        selectedIDs+=$(row).find("td:first").html();
+      else
+      selectedIDs+=" "+$(row).find("td:first").html();
+   });
+
 
     $.ajax({
         url: 'validate',
         data: {
-          'poi': $("#table tr.selected td:first").html(),
-          'lat': "{{ lat }}",
-          'lng': "{{ lan }}",
-          'alt': "{{ alt }}",
-          'poly': "{{ poly }}",
+          'poi': selectedIDs,
+          'floor': $("#table-floor tr.selected td:first").html()
 
         },
         dataType: 'json',
@@ -49,43 +61,29 @@ $('.button').on('click', function(e){
         <div class="col-sm-6 col-md-6 col lg-6 col xs-6">
             <div class="panel panel-default">
                 <div class="panel-body">
-                    <h3>Upload KML</h3>
-                        <form action="" method="post" enctype="multipart/form-data">
-                            {% csrf_token %}
-                            {{form.as_p}}
-                            <p><input type="submit" value="open" alt="register" /></p>
-                        </form>
-                        {% if error %}
-                            <h3>{{ error }}</h3>
-                        {% endif %}
-
-                        {% if lat or poly %}
+                    <h3>Floor List</h3>
                         <div class="scrollable">
-                            <table class="table" id="table-kml">
+                            <table class="table" id="table-floor">
                                 <thead>
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Latitude</th>
-                                    <th>Longitude</th>
-                                    <th>Altitude</th>
-                                    <th>Polygon</th>
+                                    <th>Id</th>
+                                    <th>Plot Id</th>
+                                    <th>Floor No</th>
+                                    <th>Description</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-
+                                    {% for f in floor %}
                                     <tr>
-                                        <td id="kml-name">{{ name }}</td>
-                                        <td id="lat">{{ lat }}</td>
-                                        <td id="lng">{{ lan }}</td>
-                                        <td id="alt">{{ alt }}</td>
-                                        <td id="poly">{{ poly }}</td>
+                                        <td>{{ f.pk }}</td>
+                                        <td>{{ f.plot_id }}</td>
+                                        <td>{{ f.floor_id }}</td>
+                                        <td>{{ f.description }}</td>
                                     </tr>
-
+                                    {% endfor %}
                                 </tbody>
                             </table>
                         </div>
-                        {% endif %}
-
                 </div>
             </div>
         </div>
@@ -103,7 +101,7 @@ $('.button').on('click', function(e){
                         <p><strong>{{ error_message }}</strong></p>
                     {% endif %}
                     <div class="scrollable">
-                        <table class="table" id="table">
+                        <table class="table" id="table" >
                             <thead>
                             <tr>
                                 <th>Id</th>

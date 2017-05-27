@@ -49,6 +49,7 @@ class Floor(models.Model):
 
 
 class POI(models.Model):
+    floor_info = models.ForeignKey(Floor, default=1, on_delete=models.CASCADE)
     uploader = models.ForeignKey(User, on_delete=models.CASCADE)
     floor_id = models.CharField(max_length=1000)
     name = models.CharField(max_length=100)

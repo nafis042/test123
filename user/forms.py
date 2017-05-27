@@ -1,7 +1,7 @@
 from  django import forms
 from django.contrib.auth.models import User
 from django.forms import ModelForm
-from .models import File, Plot, Public, POI
+from .models import File, Plot, Public, POI, Floor
 
 
 class RegistrationForm(ModelForm):
@@ -48,3 +48,9 @@ class UpdatePOIForm(ModelForm):
     class Meta:
         model = POI
         fields = ['floor_id', 'name', 'description', 'webaddress', 'mobile', 'lat', 'lng', 'alt', 'type', 'polygon']
+
+
+class UpdateFloorForm(ModelForm):
+    class Meta:
+        model = Floor
+        fields = ['plot_id', 'floor_id', 'description']

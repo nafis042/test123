@@ -26,9 +26,13 @@ urlpatterns = [
     url(r'^plot/([0-9]+)/detail/(?P<id>[0-9]+)/$', views.detail_public, name='public_detail'),
     url(r'^plot/([0-9]+)/update_public/(?P<id>[0-9]+)/$', views.update_public, name='update_public'),
     url(r'^check_public/(?P<id>[0-9]+)/$', views.check_public, name='check_public'),
-    url(r'^test/$', views.Test, name='test'),
     url(r'^create_poi/$', views.create_poi, name='create_poi'),
+    url(r'^create_poi/open_kml/$', views.create_poi_kml, name='create_poi_kml'),
     url(r'^create_poi_form/$', views.create_poi_form, name='create_poi_form'),
+    url(r'^create_floor_form/$', views.create_floor_form, name='create_floor_form'),
+    url(r'^create_poi/validate/$', views.create_poi_validate, name='create_poi_validate'),
+    url(r'^add_poi/$', views.add_poi, name='add_poi'),
+    url(r'^add_poi/validate/$', views.add_poi_validate, name='add_poi_validate'),
 ]
 
 

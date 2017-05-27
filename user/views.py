@@ -1,16 +1,16 @@
-from django.http import HttpResponse, HttpResponseRedirect
-from user.forms import RegistrationForm, LoginForm, UploadForm, UpdateForm, UpdatePOIForm, UpdatePublicForm
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from user.forms import RegistrationForm, LoginForm, UploadForm, UpdateForm, UpdatePOIForm, UpdatePublicForm, \
+    UpdateFloorForm
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
-from .models import Plot, Public, Area, File, POI
+from .models import Plot, Public, Area, POI, Floor
 from . import serializers
 from django.contrib.auth import authenticate, login, logout
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import permission_classes
 from fastkml import kml
-from shapely.geometry import Point, LineString, Polygon
-from shapely import geometry
+from shapely.geometry import Point, Polygon
 from django.views import generic
 from pathlib import Path
 import os
@@ -336,15 +336,199 @@ def check_public(request, id):
     return redirect('/user')
 
 
-def Test(request):
-    plot = Plot.objects.all()
-    poi = POI.objects.filter(assigned=False, uploader=request.user)
-    return render(request, "test.html", {"Plot": plot, "Poi": poi})
+def write_poi_to_floor(area_id, plot_id, floor_id, poi_id):
+    area_id = str(area_id)
+    plot_id = str(plot_id)
+    floor_id = str(floor_id)
+    poi_id = str(poi_id)
+    path = 'Bangladesh' + '/' + '1' + '/' + area_id + '/' + plot_id + '/' + '1_' + area_id + '_' + plot_id + \
+           '_' + floor_id + '.kml'
+    print(path)
+    with open(path, 'r') as file:
+        data = file.read()
+    poi = POI.objects.get(pk=poi_id)
+    ns = '{http://www.opengis.net/kml/2.2}'
+    k = kml.KML()
+    k.from_string(data)
+    features = list(k.features())
+    print(len(features))
+    p = kml.Placemark(ns, "new", poi.name, poi.description)
+    li = []
+    print('full data')
+    print(poi.polygon)
+    if len(poi.polygon) < 5:
+        p.geometry = Point(float(poi.lat), float(poi.lng),
+                           float(poi.alt))
+    else:
+        temp = poi.polygon
+        temp = temp.replace(', ', ',')
+        temp1 = temp.split(',')
+        for i in temp1:
+            strr = i
+            str1 = strr.split(' ')
+            print(str1)
+            list_temp = []
+            list_temp.append(float(str1[0]))
+            list_temp.append(float(str1[1]))
+            list_temp.append(float(str1[2]))
+            li.append(list_temp)
+            print(li)
+        p.geometry = Polygon(li)
+
+    placemark_list = list(features[0].features())
+    placemark_list.append(p)
+    print(len(placemark_list))
+    file = Path(path)
+    if file.exists():
+        os.remove(path)
+    k = kml.KML()
+    d = kml.Document(ns, features[0].id, features[0].name, features[0].description)
+    k.append(d)
+    for placemark in placemark_list:
+        p = kml.Placemark(ns, placemark.id, placemark.name, placemark.description)
+        p.geometry = placemark.geometry
+        d.append(p)
+    out = open(path, 'w+')
+    final = k.to_string(prettyprint=True)
+    out.write(final)
+    out.close()
+
+    return HttpResponse(final)
 
 
 def create_poi(request):
+    if request.method == 'POST':
+        form = UploadForm(request.POST, request.FILES or None)
+        if form.is_valid():
+            file = form.save(commit=False)
+            file.save()
+            uploaded_files = request.FILES['file']
+            print(uploaded_files.name)
+            path = 'media/' + uploaded_files.name
+            print(path)
+            with open(path, 'r') as myfile:
+                data = myfile.read()
+            print(data)
+            file = Path(path)
+            if file.exists():
+                os.remove(path)
+            k = kml.KML()
+            k.from_string(data)
+            features = list(k.features())
+            f2 = list(features[0].features())
+            print(len(f2))
+            if len(f2) > 1:
+                form = UploadForm()
+                poi = POI.objects.filter(assigned=False, uploader=request.user)
+                return render(request, "create_poi.html",
+                              {"form": form, "Poi": poi, "error": "Please select a valid kml file"})
+            else:
+
+                print(f2[0].name + " " + f2[0].description + " " + str(f2[0].geometry))
+
+                if "POINT" in str(f2[0].geometry):
+                    # print("asche")
+                    temp = str(f2[0].geometry).replace("POINT (", "").replace(")", "")
+                    temp = temp.replace("POINT Z (", "").replace(")", "")
+                    temp1 = temp.split()
+                    latitude = temp1[0]
+                    longitude = temp1[1]
+                    altitude = temp1[2]
+                    poly = "NULL"
+                    print(latitude + " " + longitude + " " + altitude)
+                else:
+                    poly = str(f2[0].geometry).replace("POLYGON((", "").replace("))", "")
+                    poly = poly.replace("POLYGON Z ((", "").replace("))", "")
+                    latitude = "NULL"
+                    longitude = "NULL"
+                    altitude = "NULL"
+                    print(poly)
+
+                name = str(f2[0].name)
+                form = UploadForm()
+                poi = POI.objects.filter(assigned=False, uploader=request.user)
+                return render(request, "create_poi.html",
+                              {"form": form, "Poi": poi, "name": name, "lat": latitude, "lan": longitude,
+                               "alt": altitude, "poly": poly})
+    else:
+        form = UploadForm()
         poi = POI.objects.filter(assigned=False, uploader=request.user)
-        return render(request, "create_poi.html", { "Poi": poi})
+        return render(request, "create_poi.html", {"form": form, "Poi": poi})
+
+
+def create_poi_kml(request):
+    if request.method == 'POST':
+        form = UploadForm(request.POST, request.FILES or None)
+        if form.is_valid():
+            file = form.save(commit=False)
+            file.save()
+            uploaded_files = request.FILES['file']
+            print(uploaded_files.name)
+            path = 'media/' + uploaded_files.name
+            print(path)
+            with open(path, 'r') as myfile:
+                data = myfile.read()
+            print(data)
+            file = Path(path)
+            if file.exists():
+                os.remove(path)
+            k = kml.KML()
+            k.from_string(data)
+            features = list(k.features())
+            f2 = list(features[0].features())
+            print(len(f2))
+            if len(f2) > 1:
+                form = UploadForm()
+                poi = POI.objects.filter(assigned=False, uploader=request.user)
+                return render(request, "create_poi.html", {"form": form, "Poi": poi, "error": "Please select a valid kml file"})
+            else:
+
+                print(f2[0].name + " " + f2[0].description + " " + str(f2[0].geometry))
+
+                if "POINT" in str(f2[0].geometry):
+                    # print("asche")
+                    temp = str(f2[0].geometry).replace("POINT (", "").replace(")", "")
+                    temp = temp.replace("POINT Z (", "").replace(")", "")
+                    temp1 = temp.split()
+                    latitude = temp1[0]
+                    longitude = temp1[1]
+                    altitude = temp1[2]
+                    poly = "NULL"
+                    print(latitude + " " + longitude + " " + altitude)
+                else:
+                    poly = str(f2[0].geometry).replace("POLYGON((", "").replace("))", "")
+                    poly = poly.replace("POLYGON Z ((", "").replace("))", "")
+                    latitude = "NULL"
+                    longitude = "NULL"
+                    altitude = "NULL"
+                    print(poly)
+
+                name = str(f2[0].name)
+                form = UploadForm()
+                poi = POI.objects.filter(assigned=False, uploader=request.user)
+                return render(request, "create_poi.html", {"form": form, "Poi": poi, "name": name, "lat": latitude, "lan": longitude,
+                                                           "alt": altitude, "poly": poly})
+
+
+def create_poi_validate(request):
+    print("asche")
+    poi_id = request.GET.get('poi')
+    lat = request.GET.get('lat')
+    lng = request.GET.get('lng')
+    alt = request.GET.get('alt')
+    poly = request.GET.get('poly')
+    print(lat + " " + lng + " " + alt + " " + poly)
+    print(poi_id)
+    poi = POI.objects.get(pk=poi_id)
+    poi.lat = lat
+    poi.lng = lng
+    poi.alt = alt
+    poi.polygon = poly
+    poi.save()
+    data = {
+        'success': "success"
+    }
+    return JsonResponse(data)
 
 
 def create_poi_form(request):
@@ -370,3 +554,73 @@ def create_poi_form(request):
     else:
         form = UpdatePOIForm()
         return render(request, "create_poi_form.html", {'form': form})
+
+
+def create_floor_form(request):
+    if request.method == 'POST':
+        print("asche")
+        form = UpdateFloorForm(request.POST)
+        print(form.errors)
+        if form.is_valid():
+            print(request.user)
+            floor = Floor(plot_id=form.cleaned_data['plot_id'],
+                          floor_id=form.cleaned_data['floor_id'],
+                          description=form.cleaned_data['description'])
+            floor.save()
+            plott = Plot.objects.get(pk=str(form.cleaned_data['plot_id']))
+            area = str(plott.area_id.pk)
+            plot = str(form.cleaned_data['plot_id'])
+            path = 'Bangladesh' + '/' + '1' + '/' + area + '/' + plot + '/' + \
+                   '1_' + area + '_' + plot + '_' + str(floor.pk) + '.kml'
+            directory = 'Bangladesh' + '/' + '1' + '/' + area + '/' + plot
+            print(path)
+            file = Path(path)
+            if file.exists():
+                os.remove(path)
+            else:
+                os.makedirs(directory, exist_ok=True)
+            k = kml.KML()
+            ns = '{http://www.opengis.net/kml/2.2}'
+            d = kml.Document(ns, floor.pk, 'docname', floor.description)
+            k.append(d)
+            out = open(path, 'w')
+            final = k.to_string(prettyprint=True)
+            out.write(final)
+            out.close()
+
+            return HttpResponseRedirect('/user')
+    else:
+        form = UpdateFloorForm()
+        return render(request, "create_floor_form.html", {'form': form})
+
+
+def add_poi(request):
+    floor = Floor.objects.all()
+    poi = POI.objects.filter(assigned=False, uploader=request.user)
+    return render(request, "add_poi.html", {"floor": floor, "Poi": poi})
+
+
+def add_poi_validate(request):
+    print("asche")
+    poi_id = request.GET.get('poi')
+    floor_id = request.GET.get('floor')
+    floor_id = int(floor_id)
+    floor = Floor.objects.get(pk=floor_id)
+    plot = Plot.objects.get(pk=str(floor.plot_id))
+    area = plot.area_id
+    print(poi_id)
+    print(str(area) + " " + str(floor.plot_id) + " " + str(floor_id))
+    total = poi_id.split(' ')
+    for i in total:
+        id = int(i)
+        poi = POI.objects.get(pk=id)
+        poi.floor_info = floor
+        poi.assigned = True
+        poi.save()
+        write_poi_to_floor(area, floor.plot_id, floor_id, id)
+
+
+    data = {
+        'success': "success"
+    }
+    return JsonResponse(data)
