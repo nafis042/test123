@@ -18,6 +18,7 @@ urlpatterns = [
     url(r'^api/token/verify/$', jwt.verify_jwt_token),
     url(r'^api/token/$', jwt.obtain_jwt_token),
     url(r'^upkml/$', views.upkml, name='upkml'),
+    url(r'^test/$', views.test, name='upkml'),
     url(r'^check/(?P<plot_id>[0-9]+)/$', views.check_plot, name='check_plot'),
     url(r'^plot/$', views.PlotView.as_view(), name='plot'),
     url(r'^plot/detail/(?P<plot_id>[0-9]+)/$', views.detail, name='detail'),

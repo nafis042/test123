@@ -624,3 +624,7 @@ def add_poi_validate(request):
         'success': "success"
     }
     return JsonResponse(data)
+
+
+def test(request):
+    return render(request, "test.html")
