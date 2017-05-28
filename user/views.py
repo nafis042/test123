@@ -14,6 +14,7 @@ from shapely.geometry import Point, Polygon
 from django.views import generic
 from pathlib import Path
 import os
+import csv
 
 
 def index(request):
@@ -396,7 +397,7 @@ def write_poi_to_floor(area_id, plot_id, floor_id, poi_id):
     return HttpResponse(final)
 
 
-def create_poi(request):
+def add_kml_poi(request):
     if request.method == 'POST':
         form = UploadForm(request.POST, request.FILES or None)
         if form.is_valid():
@@ -420,7 +421,7 @@ def create_poi(request):
             if len(f2) > 1:
                 form = UploadForm()
                 poi = POI.objects.filter(assigned=False, uploader=request.user)
-                return render(request, "create_poi.html",
+                return render(request, "add_kml_poi.html",
                               {"form": form, "Poi": poi, "error": "Please select a valid kml file"})
             else:
 
@@ -447,70 +448,16 @@ def create_poi(request):
                 name = str(f2[0].name)
                 form = UploadForm()
                 poi = POI.objects.filter(assigned=False, uploader=request.user)
-                return render(request, "create_poi.html",
+                return render(request, "add_kml_poi.html",
                               {"form": form, "Poi": poi, "name": name, "lat": latitude, "lan": longitude,
                                "alt": altitude, "poly": poly})
     else:
         form = UploadForm()
         poi = POI.objects.filter(assigned=False, uploader=request.user)
-        return render(request, "create_poi.html", {"form": form, "Poi": poi})
+        return render(request, "add_kml_poi.html", {"form": form, "Poi": poi})
 
 
-def create_poi_kml(request):
-    if request.method == 'POST':
-        form = UploadForm(request.POST, request.FILES or None)
-        if form.is_valid():
-            file = form.save(commit=False)
-            file.save()
-            uploaded_files = request.FILES['file']
-            print(uploaded_files.name)
-            path = 'media/' + uploaded_files.name
-            print(path)
-            with open(path, 'r') as myfile:
-                data = myfile.read()
-            print(data)
-            file = Path(path)
-            if file.exists():
-                os.remove(path)
-            k = kml.KML()
-            k.from_string(data)
-            features = list(k.features())
-            f2 = list(features[0].features())
-            print(len(f2))
-            if len(f2) > 1:
-                form = UploadForm()
-                poi = POI.objects.filter(assigned=False, uploader=request.user)
-                return render(request, "create_poi.html", {"form": form, "Poi": poi, "error": "Please select a valid kml file"})
-            else:
-
-                print(f2[0].name + " " + f2[0].description + " " + str(f2[0].geometry))
-
-                if "POINT" in str(f2[0].geometry):
-                    # print("asche")
-                    temp = str(f2[0].geometry).replace("POINT (", "").replace(")", "")
-                    temp = temp.replace("POINT Z (", "").replace(")", "")
-                    temp1 = temp.split()
-                    latitude = temp1[0]
-                    longitude = temp1[1]
-                    altitude = temp1[2]
-                    poly = "NULL"
-                    print(latitude + " " + longitude + " " + altitude)
-                else:
-                    poly = str(f2[0].geometry).replace("POLYGON((", "").replace("))", "")
-                    poly = poly.replace("POLYGON Z ((", "").replace("))", "")
-                    latitude = "NULL"
-                    longitude = "NULL"
-                    altitude = "NULL"
-                    print(poly)
-
-                name = str(f2[0].name)
-                form = UploadForm()
-                poi = POI.objects.filter(assigned=False, uploader=request.user)
-                return render(request, "create_poi.html", {"form": form, "Poi": poi, "name": name, "lat": latitude, "lan": longitude,
-                                                           "alt": altitude, "poly": poly})
-
-
-def create_poi_validate(request):
+def add_kml_poi_validate(request):
     print("asche")
     poi_id = request.GET.get('poi')
     lat = request.GET.get('lat')
@@ -550,7 +497,9 @@ def create_poi_form(request):
                       type=form.cleaned_data['type'],
                       polygon=form.cleaned_data['polygon'])
             poi.save()
-            return HttpResponseRedirect('/user')
+            # return HttpResponseRedirect('/user')
+            return render(request, "success.html")
+
     else:
         form = UpdatePOIForm()
         return render(request, "create_poi_form.html", {'form': form})
@@ -626,5 +575,40 @@ def add_poi_validate(request):
     return JsonResponse(data)
 
 
-def test(request):
-    return render(request, "test.html")
+def create_poi(request):
+    if request.method == 'POST':
+        form = UploadForm(request.POST, request.FILES or None)
+        if form.is_valid():
+            file = form.save(commit=False)
+            file.save()
+            uploaded_files = request.FILES['file']
+            print(uploaded_files.name)
+            path = 'media/' + uploaded_files.name
+            print(path)
+            with open(path, 'r') as csvfile:
+                reader = csv.DictReader(csvfile)
+                poi_list = []
+                for row in reader:
+                    poi = POI(uploader=request.user,
+                              floor_id=row['floor_id'],
+                              name=row['name'],
+                              description=row['description'],
+                              webaddress=row['webaddress'],
+                              mobile=row['mobile'],
+                              lat=row['lat'],
+                              lng=row['lng'],
+                              alt=row['alt'],
+                              type=row['type'],
+                              polygon=row['polygon'])
+                    poi.save()
+                    poi_list.append(poi)
+            file = Path(path)
+            if file.exists():
+                os.remove(path)
+            print(poi_list)
+            form = UploadForm()
+            return render(request, "create_poi.html",
+                              {"form": form, "poi_list": poi_list})
+    else:
+        form = UploadForm()
+        return render(request, "create_poi.html", {"form": form})

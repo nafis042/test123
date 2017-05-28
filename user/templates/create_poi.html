@@ -80,34 +80,35 @@ $('.button').on('click', function(e){
                         <form action="" method="post" enctype="multipart/form-data">
                             {% csrf_token %}
                             {{form.as_p}}
-                            <p><input type="submit" value="open" alt="register" /></p>
+                            <p><input type="submit" value="Save" alt="register" /></p>
                         </form>
                         {% if error %}
                             <h3>{{ error }}</h3>
                         {% endif %}
 
-                        {% if lat or poly %}
+                        {% if poi_list %}
                         <div class="scrollable">
                             <table class="table" id="table-kml">
                                 <thead>
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Latitude</th>
-                                    <th>Longitude</th>
-                                    <th>Altitude</th>
-                                    <th>Polygon</th>
+                                <th>Id</th>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Type</th>
+                                <th>Floor Id</th>
                                 </tr>
                                 </thead>
                                 <tbody>
 
-                                    <tr>
-                                        <td id="kml-name">{{ name }}</td>
-                                        <td id="lat">{{ lat }}</td>
-                                        <td id="lng">{{ lan }}</td>
-                                        <td id="alt">{{ alt }}</td>
-                                        <td id="poly">{{ poly }}</td>
-                                    </tr>
-
+                                   {% for p in poi_list %}
+                                <tr>
+                                    <td>{{ p.pk }}</td>
+                                    <td>{{ p.name }}</td>
+                                    <td>{{ p.description }}</td>
+                                    <td>{{ p.type }}</td>
+                                    <td>{{ p.floor_id }}</td>
+                                </tr>
+                                {% endfor %}
                                 </tbody>
                             </table>
                         </div>
@@ -123,38 +124,63 @@ $('.button').on('click', function(e){
 
             <div class="panel panel-default">
                 <div class="panel-body">
+  <form id="contact" action="/user/create_poi_form/" method="post">
+      {% csrf_token %}
+    <h3>Create POI Form</h3>
 
-                    <h3>POI List</h3>
+    <fieldset>
+        <strong><em>Floor_id:</em></strong>
+        <input name = "floor_id" value="" type="text" tabindex="2" required autofocus>
+    </fieldset>
 
-                    {% if error_message %}
-                        <p><strong>{{ error_message }}</strong></p>
-                    {% endif %}
-                    <div class="scrollable">
-                        <table class="table" id="table">
-                            <thead>
-                            <tr>
-                                <th>Id</th>
-                                <th>Name</th>
-                                <th>Description</th>
-                                <th>Type</th>
-                                <th>Floor Id</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                                {% for p in Poi %}
-                                <tr>
-                                    <td>{{ p.pk }}</td>
-                                    <td>{{ p.name }}</td>
-                                    <td>{{ p.description }}</td>
-                                    <td>{{ p.type }}</td>
-                                    <td>{{ p.floor_id }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                        <button name="submit" class="button" type="submit" id="contact-submit" data-submit="...Sending">Submit</button>
+     <fieldset>
+        <strong><em>Name:</em></strong>
+      <input name = "name" value="" type="text" tabindex="6" required>
+    </fieldset>
 
+     <fieldset>
+        <strong><em>Description:</em></strong>
+      <input name = "description" value="" type="text" tabindex="7">
+    </fieldset>
+
+    <fieldset>
+        <strong><em>Web Address:</em></strong>
+      <input name = "webaddress" value="" type="text" tabindex="3" >
+    </fieldset>
+    <fieldset>
+        <strong><em>Contact no:</em></strong>
+      <input name = "mobile" value="" type="text" tabindex="4" >
+    </fieldset>
+
+    <fieldset>
+        <strong><em>Latitude:</em></strong>
+      <input name = "lat" value="" type="text" tabindex="3" >
+    </fieldset>
+    <fieldset>
+        <strong><em>Longitude:</em></strong>
+      <input name = "lng" value="" type="text" tabindex="4" >
+    </fieldset>
+    <fieldset>
+        <strong><em>Altitude:</em></strong>
+      <input name = "alt" value="" type="text" tabindex="5" >
+    </fieldset>
+
+     <fieldset>
+        <strong><em>Type:</em></strong>
+      <input name = "type" value="" type="text" tabindex="8" >
+    </fieldset>
+
+     <fieldset>
+        <strong><em>Polygon:</em></strong>
+      <input name = "polygon" value="" type="text" tabindex="9" >
+    </fieldset>
+
+
+    <fieldset>
+      <button name="submit" type="submit" id="contact-submit" data-submit="...Sending">Submit</button>
+    </fieldset>
+
+  </form>
                 </div>
 
             </div>
@@ -256,7 +282,156 @@ td {border: 1px #DDD solid; padding: 5px; cursor: pointer;}
   height:100%;
   opacity: .6
   display : none;
+
+
+
 }
+
+
+ @import url(https://fonts.googleapis.com/css?family=Roboto:400,300,600,400italic);
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-font-smoothing: antialiased;
+  -o-font-smoothing: antialiased;
+  font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: "Roboto", Helvetica, Arial, sans-serif;
+  font-weight: 100;
+  font-size: 12px;
+  line-height: 30px;
+  color: #777;
+  background: #f8f8f8;
+}
+
+.container {
+  max-width: 500px;
+  width: 100%;
+  margin: 0 auto;
+  position: relative;
+}
+
+#contact input[type="text"],
+#contact input[type="email"],
+#contact input[type="tel"],
+#contact input[type="url"],
+#contact textarea,
+#contact button[type="submit"] {
+  font: 400 12px/16px "Roboto", Helvetica, Arial, sans-serif;
+}
+
+#contact {
+  background: #F9F9F9;
+  padding: 10px;
+
+  margin: 0 0;
+  box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
+}
+
+#contact h3 {
+  display: block;
+  font-size: 30px;
+  font-weight: 300;
+  margin-bottom: 10px;
+}
+
+#contact h4 {
+  margin: 5px 0 15px;
+  display: block;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+fieldset {
+  border: medium none !important;
+  margin: 0 0 5px;
+  min-width: 100%;
+  padding: 0;
+  width: 100%;
+}
+
+#contact input[type="text"],
+#contact input[type="email"],
+#contact input[type="tel"],
+#contact input[type="url"],
+#contact textarea {
+  width: 100%;
+  border: 1px solid #ccc;
+  background: #FFF;
+  margin: 0 0 5px;
+  padding: 10px;
+}
+
+#contact input[type="text"]:hover,
+#contact input[type="email"]:hover,
+#contact input[type="tel"]:hover,
+#contact input[type="url"]:hover,
+#contact textarea:hover {
+  -webkit-transition: border-color 0.3s ease-in-out;
+  -moz-transition: border-color 0.3s ease-in-out;
+  transition: border-color 0.3s ease-in-out;
+  border: 1px solid #aaa;
+}
+
+#contact textarea {
+  height: 100px;
+  max-width: 100%;
+  resize: none;
+}
+
+#contact button[type="submit"] {
+  cursor: pointer;
+  width: 100%;
+  border: none;
+  background: #4CAF50;
+  color: #FFF;
+  margin: 0 0 5px;
+  padding: 10px;
+  font-size: 15px;
+}
+
+#contact button[type="submit"]:hover {
+  background: #43A047;
+  -webkit-transition: background 0.3s ease-in-out;
+  -moz-transition: background 0.3s ease-in-out;
+  transition: background-color 0.3s ease-in-out;
+}
+
+#contact button[type="submit"]:active {
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.copyright {
+  text-align: center;
+}
+
+#contact input:focus,
+#contact textarea:focus {
+  outline: 0;
+  border: 1px solid #aaa;
+}
+
+::-webkit-input-placeholder {
+  color: #888;
+}
+
+:-moz-placeholder {
+  color: #888;
+}
+
+::-moz-placeholder {
+  color: #888;
+}
+
+:-ms-input-placeholder {
+  color: #888;
 
 </style>
 

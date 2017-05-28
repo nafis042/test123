@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block title %}{{ plot }}{% endblock %}
+
+
+{% block body %}
+
+<script>
+  $(document).ready(function(){
+    $("#table tr").click(function(){
+   $(this).addClass('selected').siblings().removeClass('selected');
+});
+
+$('.button').on('click', function(e){
+
+    $.ajax({
+        url: 'validate',
+        data: {
+          'poi': $("#table tr.selected td:first").html(),
+          'lat': "{{ lat }}",
+          'lng': "{{ lan }}",
+          'alt': "{{ alt }}",
+          'poly': "{{ poly }}",
+
+        },
+        dataType: 'json',
+        success: function (data) {
+          if (data.success) {
+
+            $('#popup').css('z-index', '1000');
+            $("#popup").show();
+            $("#close").show();
+            $('#hover').css('background-color', '#000000');
+            $('#hover').css('opacity', '.6');
+            $('#hover').css('z-index', '999');
+
+            $("#hover").show();
+
+
+          }
+        }
+      });
+
+  $("#hover").click(function(){
+
+		$(this).fadeOut();
+    $("#popup").fadeOut();
+	});
+
+  // close on click to X
+  $("#close").click(function(){
+
+	$("#hover").fadeOut();
+    $("#popup").fadeOut();
+
+    // set the cookie
+    $.cookie('showPopup', 'false', { expires: 7 });
+	});
+
+
+
+});
+
+
+});
+</script>
+
+
+
+
+<div class="container-fluid songs-container">
+
+    <div class="row">
+
+        <!-- Left Album Info -->
+        <div class="col-sm-6 col-md-6 col lg-6 col xs-6">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <h3>Upload KML</h3>
+                        <form action="" method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            {{form.as_p}}
+                            <p><input type="submit" value="open" alt="register" /></p>
+                        </form>
+                        {% if error %}
+                            <h3>{{ error }}</h3>
+                        {% endif %}
+
+                        {% if lat or poly %}
+                        <div class="scrollable">
+                            <table class="table" id="table-kml">
+                                <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Latitude</th>
+                                    <th>Longitude</th>
+                                    <th>Altitude</th>
+                                    <th>Polygon</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+
+                                    <tr>
+                                        <td id="kml-name">{{ name }}</td>
+                                        <td id="lat">{{ lat }}</td>
+                                        <td id="lng">{{ lan }}</td>
+                                        <td id="alt">{{ alt }}</td>
+                                        <td id="poly">{{ poly }}</td>
+                                    </tr>
+
+                                </tbody>
+                            </table>
+                        </div>
+                        {% endif %}
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Song Info -->
+        <div class="col-sm-6 col-md-6 col lg-6 col xs-6">
+
+
+            <div class="panel panel-default">
+                <div class="panel-body">
+
+                    <h3>POI List</h3>
+
+                    {% if error_message %}
+                        <p><strong>{{ error_message }}</strong></p>
+                    {% endif %}
+                    <div class="scrollable">
+                        <table class="table" id="table">
+                            <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Type</th>
+                                <th>Floor Id</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in Poi %}
+                                <tr>
+                                    <td>{{ p.pk }}</td>
+                                    <td>{{ p.name }}</td>
+                                    <td>{{ p.description }}</td>
+                                    <td>{{ p.type }}</td>
+                                    <td>{{ p.floor_id }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                        <button name="submit" class="button" type="submit" id="contact-submit" data-submit="...Sending">Submit</button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+
+  <div id="popup">
+    <div id="close">X</div>
+    <h2>Successfully added</h2>
+
+  </div>
+
+
+<style>
+    .scrollable{
+
+    height : 200px;
+    overflow : scroll;
+    }
+
+      .thumb {
+    height: 75px;
+    border: 1px solid #000;
+    margin: 10px 5px 0 0;
+  }
+
+.selected {
+    background-color: #4CAF50;
+    color: #FFF;
+}
+
+td {border: 1px #DDD solid; padding: 5px; cursor: pointer;}
+
+
+.button {
+  cursor: pointer;
+  width: 100%;
+  border: none;
+  background: #4CAF50;
+  color: #FFF;
+  margin: 50px 0 5px;
+  padding: 10px;
+  font-size: 15px;
+}
+
+
+
+
+#popup{
+  position:absolute;
+  width:600px;
+  height:180px;
+  background:#fff;
+  left:50%;
+  top:50%;
+  border-radius:5px;
+  padding:60px 0;
+  margin-left:-320px; /* width/2 + padding-left */
+  margin-top:-150px; /* height/2 + padding-top */
+  text-align:center;
+  box-shadow:0 0 10px 0 #000;
+  display : none;
+  #tweet{
+    color: #4099FF;
+  }
+}
+
+#close{
+  position:absolute;
+  background:black;
+  color:white;
+  right:-15px;
+  top:-15px;
+  border-radius:50%;
+  width:30px;
+  height:30px;
+  line-height:30px;
+  text-align:center;
+  font-size:8px;
+  font-weight:bold;
+  font-family:'Arial Black', Arial, sans-serif;
+  cursor:pointer;
+  box-shadow:0 0 10px 0 #000;
+  display : none;
+
+}
+
+    #hover{
+  position:absolute;
+
+  width:100%;
+  height:100%;
+  opacity: .6
+  display : none;
+}
+
+</style>
+
+{% endblock %}
